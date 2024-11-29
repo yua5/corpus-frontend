@@ -206,7 +206,10 @@ export function getWithinClausesFromFilters(filtersState: ModuleRootStateFilters
 			withinClauses[elName][attrName] = value;
 		}
 	});
-	//const withinClausesNoWithinWidget = cloneDeep(withinClauses);
+
+	// We need these for the Expert view, which doesn't have a within widget.
+	const withinClausesNoWithinWidget = cloneDeep(withinClauses);
+
 	const withinEl = patternState.shared.within;
 	if (withinEl) {
 		// Add within clause plus any attribute from the within widget as well.
@@ -216,6 +219,6 @@ export function getWithinClausesFromFilters(filtersState: ModuleRootStateFilters
 		};
 	}
 	console.log('withinClauses', withinClauses)
-	return [withinClauses, withinClauses];//NoWithinWidget];
+	return [withinClauses, withinClausesNoWithinWidget];
 }
 
