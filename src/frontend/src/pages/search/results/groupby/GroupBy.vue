@@ -375,13 +375,17 @@ export default Vue.extend({
 							const filter = FilterModule.getState().filters[filterId];
 							if (shouldInclude === null) {
 								// By default, you may group on any span attribute for which a
-								// span filter exists.
-								const vf = filter ? getValueFunctions(filter) : undefined;
-								shouldInclude = vf?.isSpanFilter ?? false;
+								// span filter exists, or which occurs in the within widget.
+								const isSpanFilter = filter ? getValueFunctions(filter)?.isSpanFilter ?? null : false;
+								const customWithin = UIStore.corpusCustomizations.search.within;
+								const isWithinAttr =
+									customWithin.includeSpan(matchInfoName) &&
+									customWithin.includeAttribute(matchInfoName, attributeName);
+								shouldInclude = isSpanFilter || isWithinAttr;
 							}
 							if (shouldInclude) {
 								result.push({
-									label: filter ? this.$tMetaDisplayName(filter) : filterId,
+									label: filter ? this.$tMetaDisplayName(filter) : this.$tWithinAttribute(matchInfoName, attributeName),
 									value: `${OPT_PREFIX_SPAN_ATTRIBUTE}${JSON.stringify([matchInfoName,attributeName])}`
 								});
 							}

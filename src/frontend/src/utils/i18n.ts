@@ -208,6 +208,9 @@ const i18nExtensionFunctions = {
 	$tWithinDisplayName(this: Vue, within: Option): string {
 		return this.$td(`index.within.${within.value}`, within.label || within.value);
 	},
+	$tWithinAttribute(this: Vue, spanName: string, attrName: string): string {
+		return this.$td(`search.withinAttributes.${spanName}.${attrName}`, `tag ${spanName}, attribute ${attrName}`);
+	},
 	$tAlignByDisplayName(this: Vue, alignBy: Option): string {
 		return this.$td(`index.alignBy.${alignBy.value}`, alignBy.label || alignBy.value);
 	}
