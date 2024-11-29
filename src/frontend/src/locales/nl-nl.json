@@ -200,13 +200,15 @@
 
 			"parallelCorpusVersion": "Kijkend naar versie ",
 			"iWantToGroupOnAnnotation": "Ik wil {some_words} {in_this_location_with_text} groeperen op {this_annotation}.",
+			"iWantToGroupOnNoAnnotation": "Ik wil groeperen op {some_words}.",
 			"in_this_location_with_text": "{in_this_location}",
 
 			"some_words": {
 				"theFirstWord": "het eerste woord",
 				"allWords": "alle woorden",
 				"specificWords": "specifieke woorden",
-				"captureGroupsLabel": "Labels en relaties"
+				"captureGroupsLabel": "Labels en relaties",
+				"spanFiltersLabel": "Span filters"
 			},
 			"in_this_location": {
 				"beforeTheHit": "voor het resultaat",
@@ -244,6 +246,7 @@
 				"firstWord": "eerste {field} {position}",
 				"allWords": "{field} {position}",
 				"labelledWord": "label {label} op {field}",
+				"spanAttribute": "tag {span}, attribuut {attribute}",
 				"metadata": "Document {field}",
 
 				"position": {

@@ -25,8 +25,8 @@ import * as ViewModule from '@/store/search/results/views';
 import * as GlobalResultsModule from '@/store/search/results/global';
 
 import * as BLTypes from '@/types/blacklabtypes';
-import { getPatternString } from '@/utils';
 import { ApiError } from '@/api';
+import { getPatternString, getWithinClausesFromFilters } from '@/utils/pattern-utils';
 
 Vue.use(Vuex);
 
@@ -104,7 +104,10 @@ const get = {
 };
 
 const privateActions = {
-	setLoadingState: b.commit((state, newState: Pick<RootState, 'loadingState'|'loadingMessage'>) => Object.assign(state, newState), 'setLoadingState'),
+	setLoadingState: b.commit((state, newState: Pick<RootState, 'loadingState'|'loadingMessage'>) => {
+		console.log(`Setting loading state to ${newState.loadingState} with message: ${newState.loadingMessage}`);
+		return Object.assign(state, newState);
+	}, 'setLoadingState'),
 }
 
 const actions = {
@@ -183,7 +186,7 @@ const actions = {
 					// Also cast back into correct type after parsing/stringifying so we don't lose type-safety (parse returns any)
 					filters: get.filtersActive() ? cloneDeep(FilterModule.get.activeFiltersMap()) as ReturnType<typeof FilterModule['get']['activeFiltersMap']> : {},
 					formState: cloneDeep(ExploreModule.getState()[exploreMode]) as ExploreModule.ModuleRootState[typeof exploreMode],
-					parallelFields: cloneDeep(PatternModule.get.parallelAnnotatedFields()) as PatternModule.ModuleRootState['parallelFields'],
+					shared: cloneDeep(PatternModule.get.shared()) as PatternModule.ModuleRootState['shared'],
 					gap: get.gapFillingActive() ? GapModule.getState() : GapModule.defaults,
 				};
 				break;
@@ -197,7 +200,7 @@ const actions = {
 					// Also cast back into correct type after parsing/stringifying so we don't lose type-safety (parse returns any)
 					filters: get.filtersActive() ? cloneDeep(FilterModule.get.activeFiltersMap()) as ReturnType<typeof FilterModule['get']['activeFiltersMap']> : {},
 					formState: cloneDeep(PatternModule.getState()[patternMode]) as PatternModule.ModuleRootState[typeof patternMode],
-					parallelFields: cloneDeep(PatternModule.get.parallelAnnotatedFields()) as PatternModule.ModuleRootState['parallelFields'],
+					shared: cloneDeep(PatternModule.get.shared()) as PatternModule.ModuleRootState['shared'],
 					gap: get.gapFillingActive() ? GapModule.getState() : GapModule.defaults,
 				};
 				break;
@@ -256,14 +259,11 @@ const actions = {
 		};
 
 		const annotations = PatternModule.get.activeAnnotations();
+		const [withinClauses] = getWithinClausesFromFilters(state.filters.filters, state.patterns);
 		const submittedFormStates = annotations
 		.filter(a => a.type !== 'pos')
 		.flatMap(a => a.value.split('|').map(value => ({...a,value})))
-		.map<{
-			entry: HistoryModule.HistoryEntry,
-			pattern?: string,
-			url: string
-		}>(a => ({
+		.map<HistoryModule.HistoryEntryPatternAndUrl>(a => ({
 			entry: {
 				...sharedBatchState,
 				patterns: {
@@ -277,21 +277,19 @@ const actions = {
 						query: null,
 						targetQueries: [],
 					},
-					parallelFields: PatternModule.getState().parallelFields, // <-- is this ok?
+					shared: PatternModule.getState().shared,
 					simple: PatternModule.getState().simple,
 					extended: {
 						annotationValues: {
 							[a.id]: a
 						},
 						splitBatch: false,
-						within: state.patterns.extended.within,
-						withinAttributes: state.patterns.extended.withinAttributes,
 					}
 				}
 			},
-			pattern: getPatternString([a], state.patterns.extended.within, state.patterns.extended.withinAttributes,
-				state.patterns.parallelFields.targets,
-				state.patterns.parallelFields.alignBy || state.ui.search.shared.alignBy.defaultValue),
+			pattern: getPatternString([a], withinClauses,
+				state.patterns.shared.targets,
+				state.patterns.shared.alignBy || state.ui.search.shared.alignBy.defaultValue),
 			// TODO :( url generation is too encapsulated to completely repro here
 			url: ''
 		}))
@@ -349,6 +347,9 @@ const init = async () => {
 	try {
 		await CorpusModule.init();
 
+		// Call the customize function(s) defined in custom.js (if any)
+		UIModule.corpusCustomizations.customizeFunctions.forEach(f => f(UIModule.corpusCustomizations));
+
 		// This is user-customizable data, it can be used to override various defaults from other modules,
 		// It needs to determine fallbacks and defaults for settings that haven't been configured,
 		// So initialize it before the other modules.
@@ -365,6 +366,7 @@ const init = async () => {
 
 		return true;
 	} catch (e: any) {
+		console.log(e);
 		if (e instanceof ApiError) {
 			if (e.httpCode === 401) {
 				privateActions.setLoadingState({loadingState: 'requiresLogin', loadingMessage: e.message});

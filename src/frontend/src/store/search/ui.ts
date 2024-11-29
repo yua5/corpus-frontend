@@ -14,11 +14,12 @@ import { stripIndent, html } from 'common-tags';
 import { RootState } from '@/store/search/';
 import * as CorpusStore from '@/store/search/corpus';
 import * as ViewsStore from '@/store/search/results/views';
-import * as PatternsStore from '@/store/search/form/patterns';
+import * as FilterModule from '@/store/search/form/filters';
 import * as BLTypes from '@/types/blacklabtypes';
 import * as AppTypes from '@/types/apptypes';
 import { Option } from '@/types/apptypes';
 import { HighlightSection } from '@/utils/hit-highlighting';
+import { spanFilterId } from '@/utils';
 
 type CustomView = {
 	id: string;
@@ -1237,45 +1238,108 @@ function printCustomizations() {
  *  It defines defaults that can be overridden from custom JS file(s); see below.
  */
 const corpusCustomizations = {
+	// Registered customize function(s), to be called once the corpus info has been loaded
+	customizeFunctions: [] as ((corpus: any) => void)[],
+
 	search: {
 		within: {
-			/** Customize which element(s) to include */
-			include(element: Option) {
+			/** Should we include this span in the within widget? (default: all) */
+			includeSpan(spanName: string) {
 				return true;
 			},
 
-			/** Which, if any, attribute filter fields should be displayed for this element? */
-			attributes(element: Option): string[]|Option[] {
-				return [];
+			/** Should we include this span attribute in the within widget? (default: none) */
+			includeAttribute(spanName: string, attrName: string) {
+				return null;
 			},
 
-			/*
-			// Alternative approach: allow direct access to the elements array, so custom JS
-			// can change that. But this relies on the corpus being loaded before the custom JS
-			// (currently not the case), and might run into issues with reactivity(?)
-
-			get elements(): Option[] {
-				return getState().search.shared.within.elements;
+			/** Which, if any, attribute filter fields should be displayed for this element?
+			 * (INTERNAL; use includeAttribute to customize, works more consistently like other methods)
+			 */
+			_attributes(spanName: string): string[]|Option[]|null {
+				const availableAttr = Object.keys(CorpusStore.getState().corpus?.relations.spans?.[spanName].attributes ?? {});
+				return availableAttr.filter(attrName => this.includeAttribute(spanName, attrName))
+					.map(a => ({ value: a }));
 			},
-
-			set elements(elements: { value: string, title: string|null, label?: string }[]) {
-				actions.search.shared.within.elements(elements);
-			}
-			*/
 		},
 
 		metadata: {
-			/** Show this metadata search field? (return null for default behaviour) */
-			show(name: string): boolean|null {
+			/** Show this metadata search field? */
+			showField(filterId: string): boolean|null {
 				return null;
-			}
-		}
+			},
+
+			/** Any custom metadata tabs to add (INTERNAL) */
+			_customTabs: [] as any[],
+
+			/** Add a custom tab with some (span) filter fields */
+			addCustomTab(name: string, fields: any[]) {
+				this._customTabs.push({ name, fields });
+			},
+
+			// Create a span filter for corpus.search.metadata.customTabs
+			createSpanFilter(spanName: string, attrName: string, widget: string = 'auto', displayName: string, metadata: any = {}): AppTypes.FilterDefinition {
+				// No options specified; try to get them from the corpus.
+				let optionsFromCorpus;
+				const corpus = CorpusStore.getState().corpus;
+				if (!metadata.options && corpus && corpus.relations.spans) {
+					const span: BLTypes.BLSpanInfo = corpus.relations.spans[spanName] ?? {};
+					const attr = span.attributes?.[attrName] ?? { values: {}, valueListComplete: false };
+					if (attr?.valueListComplete) {
+						optionsFromCorpus = Object.keys(attr.values).map((value: string) => ({ value }));
+					}
+				}
+
+				if (widget === 'auto') {
+					widget = optionsFromCorpus ? 'select' : 'text';
+				}
+
+				if (widget === 'select') {
+					// If user passed in just an array, assume these are the options.
+					if (Array.isArray(metadata)) {
+						metadata = { options: metadata };
+					}
+
+					if (!metadata.options)
+						metadata.options = optionsFromCorpus ?? [];
+
+					// If the options are just strings, convert them to simple Option objects.
+					metadata.options = metadata.options.map((option: any) => {
+						return typeof option === 'string' ? { value: option } : option;
+					});
+				}
+
+				const behaviourName = widget === 'select' || widget === 'range' ? `span-${widget}` : 'span-text';
+
+				return {
+					id: spanFilterId(spanName, attrName),
+					componentName: `filter-${widget}`,
+					behaviourName, // i.e. generate a "within ..." BCQL query
+					defaultDisplayName: displayName ?? `tag ${spanName}, attribute ${attrName}`,
+					metadata: {
+						name: spanName,
+						attribute: attrName,
+						...metadata
+					},
+					// (groupId will be set automatically when creating the custom tabs)
+				};
+			},
+		},
 	},
 
 	results: {
 		matchInfoHighlightStyle: (matchInfo: HighlightSection): string|null => {
 			return null; // fall back to default behaviour
 		}
+	},
+
+	grouping: {
+		/** Should this span attribute be included in group by?
+		 *  (return null to fall back to default: "only if there's a span filter defined for it")
+		 */
+		includeSpanAttribute(spanName: string, attrName: string): boolean|null {
+			return null; // fall back to default behaviour
+		},
 	}
 };
 
@@ -1287,15 +1351,15 @@ const corpusCustomizations = {
   * Example of a simple custom.js file using this:
   * <code>
   * frontend.customize((corpus) => {
-  *   corpus.search.within.include = (element) => element.value === 'p';
-  *   corpus.search.within.displayName = (element) => element.value === 'p' ? 'Paragraph' : null;
+  *   corpus.search.within.includeSpan = (elementName) => elementName === 'p';
   * });
   * </code>
   */
 (window as any).frontend = {
 	customize(callback: ((corpus: any) => void)) {
-		callback(corpusCustomizations);
-	}
+		corpusCustomizations.customizeFunctions.push(callback);
+	},
+
 };
 
 (window as any).printCustomJs = printCustomizations;

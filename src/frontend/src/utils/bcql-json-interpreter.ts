@@ -55,10 +55,10 @@ export type Token = {
 export type Result = {
 	query?: string; // the (partial) BCQL query (only set for source and target queries, for expert/advanced)
 	tokens?: Token[];
-	/** xml token name excluding namespace, brackets, attributes etc */
-	within?: string;
-	/** any attribute filters on the within xml token */
-	withinAttributes?: Record<string, string>;
+
+	/** any within clauses on this query */
+	withinClauses?: Record<string, Record<string, any>>;
+
 	targetVersion?: string; // target version for this query, or undefined if this is the source query
 	relationType?: string; // relation type for this (target) query, or undefined if this is the source query
 	optional?: boolean; // whether alignment relation target is optional
@@ -143,14 +143,39 @@ function interpretBcqlJson(bcql: string, json: any, defaultAnnotation: string): 
 		return tokens;
 	}
 
+	function interpretTagsAttributes(attributes: Record<string, any>): Record<string, any> {
+		if (!attributes)
+			return {};
+		// Recognize range query (e.g. { min: 10, max: 20 })
+		return Object.fromEntries(Object.entries(attributes).map(([k, v]) => {
+			if (v.min || v.max) {
+				return [k, { low: v.min == 0 ? '' : v.min.toString(), high: v.max == 9999 ? '' : v.max.toString() }];
+			}
+			return [k, v];
+		}));
+	}
+
 	function _posFilter(producer: any, operation: string, filter: any): Result {
 		if (operation !== 'within')
 			throw new Error('Unknown posfilter operation: ' + operation);
-		if (filter.type !== 'tags')
+		if (filter.type !== 'tags' && filter.type !== 'overlapping')
 			throw new Error('Unknown posfilter filter type: ' + filter.type);
 		const query = _query(producer);
-		query.within = filter.name;
-		query.withinAttributes = filter.attributes;
+
+		query.withinClauses = query.withinClauses ?? {};
+
+		if (filter.type === 'tags') {
+			query.withinClauses[filter.name.toString()] = interpretTagsAttributes(filter.attributes);
+		} else if (filter.type === 'overlapping') {
+			if (filter.operation !== 'overlap')
+				throw new Error('Unknown overlapping operation: ' + operation);
+			filter.clauses.forEach((c: any) => {
+				if (c.type !== 'tags')
+					throw new Error('Unsupported overlapping clause type: ' + c.type);
+				query.withinClauses![c.name.toString()] = interpretTagsAttributes(c.attributes);
+			});
+		}
+
 		return query;
 	}
 
@@ -255,8 +280,15 @@ function interpretBcqlJson(bcql: string, json: any, defaultAnnotation: string): 
 		case 'tags':
 			// "show me these tags" (not really within, no query given)
 			return {
-				within: input.name,
-				withinAttributes: input.attributes,
+				withinClauses: {
+					[input.name]: interpretTagsAttributes(input.attributes),
+				},
+			};
+
+		case 'overlapping':
+			// "show me the overlaps of these tags" (no query given)
+			return {
+				withinClauses: Object.fromEntries(input.clauses.filter( (c: any) => c.type === 'tags').map((c: any) => [c.name, interpretTagsAttributes(c.attributes)])),
 			};
 
 		default:

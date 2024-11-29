@@ -199,13 +199,15 @@
 
 			"parallelCorpusVersion": "Looking at version ",
 			"iWantToGroupOnAnnotation": "I want to group on {some_words} {in_this_location_with_text} using annotation {this_annotation}.",
+			"iWantToGroupOnNoAnnotation": "I want to group on {some_words}.",
 			"in_this_location_with_text": "{in_this_location}",
 
 			"some_words": {
 				"theFirstWord": "the first word",
 				"allWords": "all words",
 				"specificWords": "specific words",
-				"captureGroupsLabel": "Labels and relations"
+				"captureGroupsLabel": "Labels and relations",
+				"spanFiltersLabel": "Span filters"
 			},
 			"in_this_location": {
 				"beforeTheHit": "before the hit",
@@ -241,6 +243,7 @@
 				"firstWord": "first {field} {position}",
 				"allWords": "{field} {position}",
 				"labelledWord": "label {label} on {field}",
+				"spanAttribute": "tag {span}, attribute {attribute}",
 				"metadata": "Document {field}",
 
 				"position": {

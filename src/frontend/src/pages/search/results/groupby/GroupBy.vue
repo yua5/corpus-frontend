@@ -42,7 +42,7 @@
 						data-width="auto"
 						data-menu-width="auto"
 						hideEmpty />
-				<i18n path="results.groupBy.iWantToGroupOnAnnotation" tag="div">
+				<i18n :path="(contextValue.startsWith(OPT_PREFIX_SPAN_ATTRIBUTE) ? 'results.groupBy.iWantToGroupOnNoAnnotation' : 'results.groupBy.iWantToGroupOnAnnotation')" tag="div">
 					<!-- allow unknown values here. If grouping on a capture group/relation, they're not always available immediately (we need the first hit to decode them). -->
 					<template #some_words><SelectPicker
 						:options="contextOptions"
@@ -196,13 +196,14 @@ import * as UIStore from '@/store/search/ui';
 import * as ResultsStore from '@/store/search/results/views';
 import * as GlobalSearchSettingsStore from '@/store/search/results/global';
 import * as SearchModule from '@/store/search/index';
+import * as FilterModule from '@/store/search/form/filters';
 
-import { getAnnotationSubset, getMetadataSubset } from '@/utils';
+import { getAnnotationSubset, getMetadataSubset, isHitParams, spanFilterId } from '@/utils';
 import { blacklab } from '@/api';
 
 import {isHitResults, BLSearchResult, BLSearchParameters, BLHitResults, BLMatchInfoRelation, BLSummaryMatchInfo, BLHitInOtherField, BLMatchInfo} from '@/types/blacklabtypes';
 
-import {GroupBy, serializeGroupBy, parseGroupBy, isValidGroupBy, ContextPositional, GroupByContext, ContextLabel, humanizeGroupBy as summarizeGroup} from '@/utils/grouping';
+import {GroupBy, serializeGroupBy, parseGroupBy, isValidGroupBy, ContextPositional, GroupByContext, ContextLabel, humanizeGroupBy as summarizeGroup } from '@/utils/grouping';
 
 import debug from '@/utils/debug';
 
@@ -217,6 +218,10 @@ import { CaptureAndRelation, HitToken, Option, TokenHighlight } from '@/types/ap
 
 
 import Tabs from '@/components/Tabs.vue';
+import { getValueFunctions } from '@/components/filters/filterValueFunctions';
+
+// What we prefix the tag attribute grouping option with so we can recognize it
+const OPT_PREFIX_SPAN_ATTRIBUTE = '$TAGATTR:';
 
 export default Vue.extend({
 	components: {
@@ -241,7 +246,9 @@ export default Vue.extend({
 		/** For the preview. Results from props can also be grouped, so we need to request these ourselves. */
 		hits: undefined as undefined|BLHitResults,
 
-		active: false
+		active: false,
+
+		OPT_PREFIX_SPAN_ATTRIBUTE,
 	}),
 	computed: {
 		metadataGroups() { return CorpusStore.get.metadataGroups() },
@@ -264,7 +271,8 @@ export default Vue.extend({
 		storeValue(): string[] { return this.storeModule.getState().groupBy; },
 		firstHitPreviewQuery(): BLSearchParameters|undefined {
 			let params = SearchModule.get.blacklabParameters();
-			if (!params || !params.patt) return undefined; // can't get hits without a query
+			if (!isHitParams(params))
+				return undefined; // can't get hits without a query
 
 			params = {...params}; // make a copy before modifying
 			if (!params.viewgroup)
@@ -308,7 +316,8 @@ export default Vue.extend({
 
 		contextsize(): number {
 			let params = SearchModule.get.blacklabParameters();
-			if (!params || !params.patt) return 5; // default
+			if (!isHitParams(params))
+				return 5; // default
 			return typeof params.context === 'number' ? params.context as number :  // use actual value from query if set
 			    (typeof GlobalSearchSettingsStore.getState().context === 'number' ?
 			        GlobalSearchSettingsStore.getState().context as number :  // use global default if set
@@ -339,8 +348,43 @@ export default Vue.extend({
 					if (sourceInThisField || targetInThisField) {
 						result.push({
 							label: k,
-							name: `${k}`,
+							name: k,
 							targetField: this.selectedCriteriumAsPositional?.fieldName,
+						});
+					}
+				});
+			return result;
+		},
+		tagAttributes() {
+			const matchInfos = this.hits?.summary?.pattern?.matchInfos || {};
+			const result: { label?: string, value: string, title?: string }[] = [];
+			Object.entries(matchInfos)
+				.filter(([_, matchInfo]) => matchInfo.type === 'tag')
+				.forEach(([matchInfoName, matchInfo]) => {
+					const sourceInThisField = this.relationSourceInThisField(matchInfo);
+					if (sourceInThisField) {
+						const spanInfo = CorpusStore.getState().corpus!.relations.spans![matchInfoName];
+						if (!spanInfo)
+							console.log('No span info for', matchInfoName);
+						const attr = Object.keys(spanInfo?.attributes ?? {});
+						attr.forEach(attributeName => {
+							// Check custom method to see if we should include this attribute
+							// (or if that returns null, we will fall back to default behaviour)
+							let shouldInclude = UIStore.corpusCustomizations.grouping.includeSpanAttribute(matchInfoName, attributeName);
+							const filterId = spanFilterId(matchInfoName, attributeName);
+							const filter = FilterModule.getState().filters[filterId];
+							if (shouldInclude === null) {
+								// By default, you may group on any span attribute for which a
+								// span filter exists.
+								const vf = filter ? getValueFunctions(filter) : undefined;
+								shouldInclude = vf?.isSpanFilter ?? false;
+							}
+							if (shouldInclude) {
+								result.push({
+									label: filter ? this.$tMetaDisplayName(filter) : filterId,
+									value: `${OPT_PREFIX_SPAN_ATTRIBUTE}${JSON.stringify([matchInfoName,attributeName])}`
+								});
+							}
 						});
 					}
 				});
@@ -508,6 +552,9 @@ export default Vue.extend({
 				label: this.$t('results.groupBy.some_words.specificWords').toString(),
 				value: 'specific'
 			}, {
+				label: this.$t('results.groupBy.some_words.spanFiltersLabel').toString(),
+				options: this.tagAttributes,
+			}, {
 				label: this.$t('results.groupBy.some_words.captureGroupsLabel').toString(),
 				options: [
 					...this.relations.map(c => ({
@@ -517,7 +564,7 @@ export default Vue.extend({
 					...this.captures.map(c => ({
 						label: `<span class="color-ball" style="background-color: ${this.colors[c.label].color};">&nbsp;</span> capture ${c.name}`,
 						value: c.name
-					}))
+					})),
 				]
 			}];
 		},
@@ -565,7 +612,14 @@ export default Vue.extend({
 			get(): 'first'|'all'|'context'|string {
 				// if grouping on a label: return the label, if grouping on a position: return the position.
 				// Otherwise blank.
-				return this.selectedCriteriumAsLabel?.context.label ?? this.selectedCriteriumAsPositional?.context.whichTokens ?? '';
+				if (this.selectedCriterium?.type !== 'context')
+					return '';
+				else if (this.selectedCriterium.context.type === 'span-attribute')
+					return `${OPT_PREFIX_SPAN_ATTRIBUTE}${JSON.stringify([this.selectedCriterium.context.spanName, this.selectedCriterium.context.attributeName])}`;
+				else if (this.selectedCriterium.context.type === 'label')
+					return this.selectedCriterium.context.label;
+				else
+					return this.selectedCriteriumAsPositional?.context.whichTokens ?? '';
 			},
 			/** The string value is when grouping on a capture group or relation. */
 			set(v: 'first'|'all'|'specific'|string) {
@@ -591,10 +645,21 @@ export default Vue.extend({
 						this.selectedCriteriumAsPositional.context.position = 'H';
 					}
 				} else {
-					this.selectedCriterium.context = {
-						type: 'label',
-						label: v,
-						relation: this.relationNames?.includes(v) ? this.getInitialRelationPartValue(v) : undefined
+					if (v.startsWith(OPT_PREFIX_SPAN_ATTRIBUTE)) {
+						// grouping on a span attribute
+						const [tag, attr] = JSON.parse(v.slice(OPT_PREFIX_SPAN_ATTRIBUTE.length));
+						this.selectedCriterium.context = {
+							type: 'span-attribute',
+							spanName: tag,
+							attributeName: attr
+						};
+					} else {
+						// update context object as we're currently grouping on a label.
+						this.selectedCriterium.context = {
+							type: 'label',
+							label: v,
+							relation: this.relationNames?.includes(v) ? this.getInitialRelationPartValue(v) : undefined
+						}
 					}
 				}
 			},

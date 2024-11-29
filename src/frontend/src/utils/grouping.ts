@@ -1,5 +1,8 @@
 import { NormalizedAnnotation, NormalizedMetadataField } from "@/types/apptypes";
 import { BLHitResults, BLSearchResult } from '@/types/blacklabtypes';
+import { spanFilterId } from '@/utils';
+import { attr } from 'highcharts';
+import * as FilterModule from '@/store/search/form/filters';
 
 /** Group by some tokens at a fixed position in the hit. */
 export type ContextPositional = {
@@ -19,9 +22,15 @@ export type ContextLabel = {
 	label: string;
 	relation?: 'source'|'target'|'full'|undefined;
 }
+/** Group by an attribute of a captured span (tag) */
+export type ContextAttribute = {
+	type: 'span-attribute';
+	spanName: string;
+	attributeName: string;
+}
 
 /** Represents grouping by one or more tokens in the hit */
-export type GroupByContext<T extends ContextPositional|ContextLabel = ContextPositional|ContextLabel> = {
+export type GroupByContext<T extends ContextPositional|ContextLabel|ContextAttribute = ContextPositional|ContextLabel|ContextAttribute> = {
 	type: 'context',
 	fieldName?: string,
 	annotation: string|undefined,
@@ -45,6 +54,19 @@ export type GroupByCustom = {
 	value: string;
 }
 export type GroupBy = GroupByContext|GroupByMetadata|GroupByCustom;
+
+function determineRelationPartField(results: BLSearchResult|undefined, label: string, relationPart: string|undefined, overriddenFieldName: string|undefined) {
+	const defaultFieldName = overriddenFieldName ?? results?.summary.pattern?.fieldName;
+	const matchInfoDef = results?.summary.pattern?.matchInfos?.[label];
+	if (matchInfoDef) {
+		// Make sure we return the correct field if we're referencing a crossfield relation target
+		if (relationPart === 'target')
+			return matchInfoDef.targetField ?? defaultFieldName;
+		else
+			return matchInfoDef.fieldName ?? defaultFieldName;
+	}
+	return defaultFieldName;
+};
 
 /**
  * Parse a GroupBy string. It should be pre-separated on comma's.
@@ -70,19 +92,7 @@ export function parseGroupBy(groupBy: string[], results?: BLSearchResult): Group
 			};
 			case 'capture':
 				const [_, __, sensitivity, label, relationPart] = parts;
-				const determineRelationPartField = (label: string, relationPart: string|undefined, overriddenFieldName: string|undefined) => {
-					const defaultFieldName = overriddenFieldName ?? results?.summary.pattern?.fieldName;
-					const matchInfoDef = results?.summary.pattern?.matchInfos?.[label];
-					if (matchInfoDef) {
-						// Make sure we return the correct field if we're referencing a crossfield relation target
-						if (relationPart === 'target')
-							return matchInfoDef.targetField ?? defaultFieldName;
-						else
-							return matchInfoDef.fieldName ?? defaultFieldName;
-					}
-					return defaultFieldName;
-				};
-				const actualFieldName = determineRelationPartField(label, relationPart, optFieldName)
+				const actualFieldName = determineRelationPartField(results, label, relationPart, optFieldName)
 				return cast<GroupByContext>({
 					type: 'context',
 					fieldName: actualFieldName,
@@ -95,6 +105,21 @@ export function parseGroupBy(groupBy: string[], results?: BLSearchResult): Group
 						relation: relationPart as 'source'|'target'|'full'|undefined
 					}
 				});
+			case 'span-attribute': {
+				const [__, tagName, attributeName, sensitivity] = parts;
+				const actualFieldName = determineRelationPartField(results, tagName, 'source', optFieldName);
+				return cast<GroupByContext>({
+					type: 'context',
+					fieldName: actualFieldName,
+					annotation: undefined,
+					caseSensitive: sensitivity === 's',
+					context: {
+						type: 'span-attribute',
+						spanName: tagName,
+						attributeName,
+					}
+				});
+			}
 			case 'hit':
 				return cast<GroupByContext>({
 					type: 'context',
@@ -231,6 +256,8 @@ export function serializeGroupBy(groupBy: GroupBy|GroupBy[]): string|string[] {
 					}
 
 					return `context:${optTargetField}${g.annotation}:${g.caseSensitive ? 's' : 'i'}:${spec}`;
+				} else if (ctx.type === 'span-attribute') {
+					return `span-attribute:${ctx.spanName}:${ctx.attributeName}:${g.caseSensitive ? 's' : 'i'}`;
 				} else {
 					never(ctx && g);
 				}
@@ -247,6 +274,8 @@ export function isValidGroupBy(g: GroupBy): boolean {
 	if (!g.type) return false;
 	if (g.type === 'metadata' && !g.field) return false;
 	if (g.type === 'context') {
+		if (g.context.type === 'span-attribute')
+			return !!(g.context.spanName && g.context.attributeName);
 		if (!g.annotation) return false;
 		if (g.context.type === 'label' && !g.context.label) return false;
 		if (g.context.type === 'positional' && !g.context.position) return false;
@@ -257,10 +286,19 @@ export function isValidGroupBy(g: GroupBy): boolean {
 
 export function humanizeGroupBy(i18n: Vue, g: GroupBy, annotations: Record<string, NormalizedAnnotation>, metadata: Record<string, NormalizedMetadataField>): string {
 	if (g.type === 'context') {
-		if (!g.annotation) return i18n.$t('results.groupBy.specify').toString();
+		if (g.context.type === 'span-attribute') {
+			const filterId = spanFilterId(g.context.spanName, g.context.attributeName);
+			const filter = FilterModule.getState().filters[filterId];
+			return filter ?
+				i18n.$tMetaDisplayName(filter).toString() :
+				i18n.$t('results.groupBy.summary.spanAttribute', { span: g.context.spanName, attribute: g.context.attributeName}).toString();
+		}
+		if (!g.annotation)
+			return i18n.$t('results.groupBy.specify').toString();
 		const field = i18n.$tAnnotDisplayName(annotations[g.annotation]);
 
-		if (g.context.type === 'label') return i18n.$t('results.groupBy.summary.labelledWord', {field, label: g.context.label}).toString();
+		if (g.context.type === 'label')
+			return i18n.$t('results.groupBy.summary.labelledWord', {field, label: g.context.label}).toString();
 
 		let positionDisplay: string;
 		switch (g.context.position) {
