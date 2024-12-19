@@ -1476,35 +1476,30 @@ In the override file(s) in the `static/locales` directory for your corpus, you c
 For example in `$corporaInterfaceDataDir/YOUR_CORPUS/static/locales/en-us.json`
 ```json
 {
-	"index": {
-		"annotations": {
-          "pos": "Part of speech"
-		},
-      
-		"annotationGroups": {
-		  "simple": "Basic annotations",
-		  "advanced": "Advanced annotations"
-		},
-
-		"metadata": {
-			"spanFilters": {
-				"name": {
-					"type": "Named entity type"
-				}
-			}
-		},
-      
-		"metadataGroups": {
-          "author": "Author-related fields", 
-          "date": "Date-related fields"
-		},
-
-		"within": {
-            "name": "Named entity"
-		}
-	}
+  "index": {
+    "annotations": {
+      "pos": "Part of speech"
+    },
+    "annotationGroups": {
+      "simple": "Basic annotations",
+      "advanced": "Advanced annotations"
+    },
+    "metadata": {
+      "spanFilters": {
+        "name": {
+          "type": "Named entity type"
+        }
+      }
+    },
+    "metadataGroups": {
+      "author": "Author-related fields",
+      "date": "Date-related fields"
+    },
+    "within": {
+      "name": "Named entity"
+    }
+  }
 }
-
 ```
 
 ### **Development tips**
