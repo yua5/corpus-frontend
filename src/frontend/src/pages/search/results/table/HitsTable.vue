@@ -25,7 +25,7 @@
 						role="button"
 						:class="['sort', {disabled}]"
 						:title="def.sortOptions[0].title.toString()"
-						@click="changeSort(def.sortOptions[0].sortKey)">{{ def.sortOptions[0].label }} <Debug>{{def.sortOptions[0].debugLabel}}</Debug>
+						@click="changeSort(def.sortOptions[0].sortKey)">{{ def.columnLabel }} <Debug>{{def.sortOptions[0].debugLabel}}</Debug>
 					</a>
 					<template v-else>{{def.columnLabel}}</template>
 				</th>
