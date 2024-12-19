@@ -155,8 +155,8 @@ export default Vue.extend({
 		this.activeTab = this.tabs.length ? this.tabs[0].tabname : null;
 	},
 	watch: {
-		tabs(cur, prev) {
-			this.activeTab = cur.length ? cur[0].name : null;
+		tabs(cur: FilterStore.FilterGroupType[], prev) {
+			this.activeTab = cur.length ? cur[0].tabname : null;
 		},
 		activeTab: {
 			immediate: true,
