@@ -454,20 +454,22 @@ const actions = {
 		shared: {
 			searchMetadataIds: b.commit((state, ids: string[]) => validateMetadata(ids,
 				id => `Trying to display metadata field '${id}' in the filters section, but it does not exist.`,
-				_ => true, _ => '',
+			_ => true, _ => '',
 				r => state.search.shared.searchMetadataIds = r
 			), 'search_shared_searchMetadataIds'),
 			within: {
 				enable: b.commit((state, payload: boolean) => state.search.shared.within.enabled = payload, 'search_shared_within_enable'),
 				elements: b.commit((state, payload: ModuleRootState['search']['shared']['within']['elements']) => {
-					if (payload.findIndex(v => v.value === '') === -1) {
-						payload.unshift({
+					const relations = CorpusStore.getState().corpus!.relations;
+					const validElements = payload.filter(v => relations.spans?.[v.value]);
+					if (!validElements.find(v => v.value === '')) {
+						validElements.unshift({
 							value: '',
 							label: 'Document',
 							title: null
 						});
 					}
-					state.search.shared.within.elements = payload;
+					state.search.shared.within.elements = validElements;
 				}, 'search_shared_within_annotations'),
 				sentenceElement: b.commit((state, payload: string|null) => {
 					if (state.search.shared.within.elements.findIndex(e => e.value === payload) >= 0 )
