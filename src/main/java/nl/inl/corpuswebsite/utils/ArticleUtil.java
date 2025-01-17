@@ -61,8 +61,10 @@ public class ArticleUtil {
         // (used for parallel corpora, where a query can return hits from a different field than the one that was searched,
         //  e.g. search the contents__en field using query rfield('the' -->nl _, 'nl') to find the Dutch translation of 'the')
         Optional<String> fieldToShow = getParameter("field", request); // required
+        if (fieldToShow.isEmpty())
+            throw new RuntimeException("No field specified. Please specify a field to display.");
         Optional<String> fieldToSearch = getParameter("searchfield", request); // optional, only if different
-        Optional<String> queryTargetField = fieldToSearch.isPresent() ? fieldToShow : Optional.empty();
+        Optional<String> queryTargetField = fieldToSearch.isPresent() && !fieldToSearch.get().equals(fieldToShow.get()) ? fieldToShow : Optional.empty();
 
         return new BlackLabApi(request, response, config)
             .getDocumentContents(
