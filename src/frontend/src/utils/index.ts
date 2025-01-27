@@ -578,7 +578,6 @@ export function getMetadataSubset<T extends {id: string, defaultDisplayName?: st
 	/* show the <small/> labels at the end of options labels? */
 	showGroupLabels = true
 ): Array<AppTypes.OptGroup&{entries: T[]}> {
-	const defaultMetadataOptGroupName = 'Metadata';
 	const subset = fieldSubset(ids, groups, metadata);
 
 	// Map a metadata field's id + displayname + group to an option for rendering a groupby or sortby dropdown.
@@ -610,9 +609,6 @@ export function getMetadataSubset<T extends {id: string, defaultDisplayName?: st
 		label: i18n.$tMetaGroupName(group.id)
 	}));
 
-	// If there is only one metadata group to display: do not display the group names, instead display only 'Metadata'
-	// https://github.com/INL/corpus-frontend/issues/197#issuecomment-441475896
-	if (r.length === 1) { r[0].label = defaultMetadataOptGroupName; }
 	return r;
 }
 
