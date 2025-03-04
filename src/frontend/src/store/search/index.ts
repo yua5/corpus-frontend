@@ -97,7 +97,8 @@ const get = {
 			// (CHECK: frontend client doesn't use XML anywhere, does it...?)
 			outputformat: 'json',
 			// Skip the cache so we'll hit our breakpoints
-			usecache: false
+			// DANGEROUS! Polling will keep starting new searches.
+			//usecache: false
 		} : {};
 
 		return {

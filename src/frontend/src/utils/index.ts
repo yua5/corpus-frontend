@@ -578,7 +578,6 @@ export function getMetadataSubset<T extends {id: string, defaultDisplayName?: st
 	/* show the <small/> labels at the end of options labels? */
 	showGroupLabels = true
 ): Array<AppTypes.OptGroup&{entries: T[]}> {
-	const defaultMetadataOptGroupName = 'Metadata';
 	const subset = fieldSubset(ids, groups, metadata);
 
 	// Map a metadata field's id + displayname + group to an option for rendering a groupby or sortby dropdown.
@@ -610,9 +609,6 @@ export function getMetadataSubset<T extends {id: string, defaultDisplayName?: st
 		label: i18n.$tMetaGroupName(group.id)
 	}));
 
-	// If there is only one metadata group to display: do not display the group names, instead display only 'Metadata'
-	// https://github.com/INL/corpus-frontend/issues/197#issuecomment-441475896
-	if (r.length === 1) { r[0].label = defaultMetadataOptGroupName; }
 	return r;
 }
 
@@ -771,6 +767,23 @@ export function getParallelFieldParts(fieldName: string) {
 export function getParallelFieldName(prefix: string, version: string) {
 	return `${prefix}${PARALLEL_FIELD_SEPARATOR}${version}`;
 }
+
+/** If passed only a version name: prefix it with the field name from defaultFieldName.
+ *
+ *  So:
+ *  <code>ensureCompleteFieldName('en',          'contents__nl') === 'contents__en'</code>
+ *  <code>ensureCompleteFieldName('contents_en', 'contents__nl') === 'contents__en'</code>
+ */
+export function ensureCompleteFieldName(fieldOrVersion: string, defaultFieldName: string) {
+	if (isParallelField(fieldOrVersion)) {
+		return fieldOrVersion;
+	} else {
+		// Prefix with the field name
+		const parts = getParallelFieldParts(defaultFieldName);
+		return getParallelFieldName(parts.prefix, fieldOrVersion);
+	}
+}
+
 
 /** Does the specified field name denote a field in a parallel corpus? */
 export function isParallelField(fieldName: string) {
