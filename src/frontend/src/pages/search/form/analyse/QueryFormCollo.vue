@@ -22,7 +22,7 @@
 							<span class="fa fa-upload fa-fw"></span>
 							<input
 								type="file"
-								:title="$t('analyse.collocation.uploadTitle')"
+								:title="$t('analyse.collocation.stopwordsHelp')"
 								:id="'stopwordsInput'"
 								@change="onStopwordsFileChanged"
 							>

@@ -18,7 +18,7 @@
 				<ResultsView
 					:id="activeForm"
 					:label="activeForm+'Tab'"
-					:active="true"
+					:active="false"
 					:store="storeFor(activeForm)"
 				></ResultsView>
 			</div>

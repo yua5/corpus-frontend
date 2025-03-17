@@ -32,11 +32,11 @@ public class CollocationAnalyse {
         this.wordNumber = wordNumber;
         this.isCase = isCase;
         this.corpusName = corpusName;
-        this.stopwordsStr = stopwordsStr;
+        this.stopwordsStr = (stopwordsStr != null) ? stopwordsStr : "";
         this.keywordsInput = (keywordsInput != null) ? keywordsInput : "";
-        this.testAlg = testAlg;
-        this.bayesAlg = bayesAlg;
-        this.effectSizeAlg = effectSizeAlg;
+        this.testAlg = (testAlg != null) ? testAlg : "";
+        this.bayesAlg = (bayesAlg != null) ? bayesAlg : "";
+        this.effectSizeAlg = (effectSizeAlg != null) ? effectSizeAlg : "";
     }
 
     public JSONObject getColloService() throws Exception {
@@ -58,7 +58,7 @@ public class CollocationAnalyse {
         Map<String, Integer> keywordFreqMap = new HashMap<>();
         Map<String, Integer> colloFreqMap = new HashMap<>();
         //if the algorithm is not "None", computing o11, o12, o21 and o22
-        if(!"None".equals(testAlg) && !"None".equals(bayesAlg) && !"None".equals(effectSizeAlg)){
+        if(!"None".equals(testAlg) || !"None".equals(bayesAlg) || !"None".equals(effectSizeAlg)){
             Set<String> uniqueKeywords = new HashSet<>();
             Set<String> uniqueCollowords = new HashSet<>();
             for (Object obj : colloArray) {
@@ -131,7 +131,7 @@ public class CollocationAnalyse {
                 BayesAlg.bayesLogLikelihoodRatioTest(colloArray, keywords);
                 break;
             default:
-                System.out.println(testAlg);
+                System.out.println(bayesAlg);
                 break;
         }
 
@@ -188,7 +188,7 @@ public class CollocationAnalyse {
                 EffectSizeAlg.squaredPhiCoeff(colloArray, keywords);
                 break;
             default:
-                System.out.println(testAlg);
+                System.out.println(effectSizeAlg);
                 break;
         }
 

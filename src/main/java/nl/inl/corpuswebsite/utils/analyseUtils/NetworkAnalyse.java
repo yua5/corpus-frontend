@@ -28,9 +28,9 @@ public class NetworkAnalyse {
         this.wordNumber = wordNumber;
         this.isCase = isCase;
         this.corpusName = corpusName;
-        this.stopwordsStr = stopwordsStr;
+        this.stopwordsStr = (stopwordsStr != null) ? stopwordsStr : "";
         this.scope = scope;
-        this.edgeAlg = edgeAlg;
+        this.edgeAlg = (edgeAlg != null) ? edgeAlg : "";
         this.weightThreshold = weightThreshold;
         this.numCommunities = numCommunities;
     }
@@ -69,7 +69,11 @@ public class NetworkAnalyse {
             }
         }
 
-        JSONArray edgeArray = blUtils.getCooccurNetworkEdge(corpusName, isCase, stopWords, keywords, edgeAlg, scope, weightThreshold);
+        JSONArray edgeArray = new JSONArray();
+        if (!"".equals(edgeAlg))
+        {
+            edgeArray = blUtils.getCooccurNetworkEdge(corpusName, isCase, stopWords, keywords, edgeAlg, scope, weightThreshold);
+        }
 
         JSONArray filteredEdgeArray = new JSONArray();
         for (int i = 0; i < edgeArray.size(); i++) {

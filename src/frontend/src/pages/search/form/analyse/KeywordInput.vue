@@ -143,6 +143,7 @@ export default Vue.extend({
 	},
 	data: () => ({
 		subscriptions: [] as Array<() => void>,
+		uid: uid(),
 
 		keywordMode: 'Simple Mode',
 	}),

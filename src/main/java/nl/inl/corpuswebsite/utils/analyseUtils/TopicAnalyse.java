@@ -29,7 +29,7 @@ public class TopicAnalyse {
         this.wordNumber = wordNumber;
         this.isCase = isCase;
         this.corpusName = corpusName;
-        this.stopwordsStr = stopwordsStr;
+        this.stopwordsStr = (stopwordsStr != null) ? stopwordsStr : "";
         this.interation = interation;
     }
 
@@ -62,18 +62,22 @@ public class TopicAnalyse {
             instances.addThruPipe(new Instance(docContent.toString(), null, "doc_" + instances.size(), null));
         }
 
-        // Step 3: Training LDA model
-        int numTopics = topicNumber;
-        ParallelTopicModel model = new ParallelTopicModel(numTopics);
-        // Set a fixed random seed to ensure the initialization is the same every time you train
-        model.setRandomSeed(114514);
-        model.addInstances(instances);
-        model.setNumThreads(2);  // Set thread count
-        model.setNumIterations(interation);  // Set number of iterations
-        model.estimate();  // estimate model
+        JSONArray resultDataJsonArray = new JSONArray();
+        if(topicNumber > 0)
+        {
+            // Step 3: Training LDA model
+            int numTopics = topicNumber;
+            ParallelTopicModel model = new ParallelTopicModel(numTopics);
+            // Set a fixed random seed to ensure the initialization is the same every time you train
+            model.setRandomSeed(114514);
+            model.addInstances(instances);
+            model.setNumThreads(2);  // Set thread count
+            model.setNumIterations(interation);  // Set number of iterations
+            model.estimate();  // estimate model
 
-        // Step 4: Get the first few words of each topic and their weights in JSON format
-        JSONArray resultDataJsonArray = getTopicsJson(model, instances.getDataAlphabet(), wordNumber);
+            // Step 4: Get the first few words of each topic and their weights in JSON format
+            resultDataJsonArray = getTopicsJson(model, instances.getDataAlphabet(), wordNumber);
+        }
 
         // Get column name
         JSONArray resultColumnJsonArray = new JSONArray();

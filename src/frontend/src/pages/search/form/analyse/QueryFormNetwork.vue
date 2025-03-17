@@ -3,7 +3,9 @@
 		<div>
 			<div class="tab-content tab-pane form-horizontal">
 				<div class="form-group">
-					<label class="col-xs-4 col-md-2" for="stopwords">{{$t('analyse.network.stopwords')}}</label>
+					<label class="col-xs-4 col-md-2" for="stopwords">{{$t('analyse.network.stopwords')}}
+						<a class='help' href='javascript:void(0);' :title="$t('analyse.network.stopwordsHelp').toString()">🛈</a>
+					</label>
 					<div style="display: flex; align-items: center;" class="col-xs-8 col-md-5">
 						<div style="flex-grow: 1;">
 							<input
@@ -20,7 +22,7 @@
 							<span class="fa fa-upload fa-fw"></span>
 							<input
 								type="file"
-								title="Upload a list of values"
+								:title="$t('analyse.network.stopwordsHelp')"
 								:id="'stopwordsInput'"
 								@change="onFileChanged"
 							>

@@ -462,12 +462,12 @@ const actions = {
 		FormManager.actions.reset();
 		ViewModule.actions.resetAllViews({resetGroupBy: true});
 		QueryModule.actions.reset();
-		TopicModule.actions.reset();
-		ColloModule.actions.reset();
-		CooccurModule.actions.reset();
-		WordlistModule.actions.reset();
-		KeywordModule.actions.reset();
-		NetworkModule.actions.reset();
+		// TopicModule.actions.reset();
+		// ColloModule.actions.reset();
+		// CooccurModule.actions.reset();
+		// WordlistModule.actions.reset();
+		// KeywordModule.actions.reset();
+		// NetworkModule.actions.reset();
 	}, 'resetRoot'),
 
 	/**

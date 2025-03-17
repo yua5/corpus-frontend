@@ -28,9 +28,9 @@ public class WordlistAnalyse {
         this.wordNumber = wordNumber;
         this.isCase = isCase;
         this.corpusName = corpusName;
-        this.stopwordsStr = stopwordsStr;
-        this.adjustedAlg = adjustedAlg;
-        this.dispersionAlg = dispersionAlg;
+        this.stopwordsStr = (stopwordsStr != null) ? stopwordsStr : "";
+        this.adjustedAlg = (adjustedAlg != null) ? adjustedAlg : "";
+        this.dispersionAlg = (dispersionAlg != null) ? dispersionAlg : "";
         this.partN = partN;
     }
 
@@ -38,7 +38,11 @@ public class WordlistAnalyse {
         String[] stopWordsArray = stopwordsStr.split("\\|");
         List<String> stopWords = Arrays.asList(stopWordsArray);
         BlacklabUtilsForAnalyse blUtils = new BlacklabUtilsForAnalyse(baseUrl);
-        JSONArray wordFreqArray = blUtils.getTermfreq(corpusName, isCase, wordNumber,  stopWords);
+        JSONArray wordFreqArray = new JSONArray();
+        if( !"".equals(adjustedAlg) && !"".equals(dispersionAlg))
+        {
+            wordFreqArray = blUtils.getTermfreq(corpusName, isCase, wordNumber,  stopWords);
+        }
 
         List<String> corpus = blUtils.getAllContentLinear(corpusName, stopWords, isCase);
 

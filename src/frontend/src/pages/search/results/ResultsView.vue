@@ -144,6 +144,7 @@ import { humanizeGroupBy, parseGroupBy, serializeGroupBy } from '@/utils/groupin
 import { TranslateResult } from 'vue-i18n';
 import { mergeMatchInfos } from '@/utils/hit-highlighting';
 import { isHitParams } from '@/utils';
+import { ConnectableObservable } from 'rxjs';
 
 export default Vue.extend({
 	components: {
@@ -206,7 +207,7 @@ export default Vue.extend({
 				this.cancel = null;
 				this.request = null;
 			}
-			if (this.active) {
+			if (this.active || InterfaceModule.get.form() === 'analyse') {
 				this.refresh();
 			}
 		},

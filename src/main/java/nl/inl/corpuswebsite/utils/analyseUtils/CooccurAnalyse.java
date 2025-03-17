@@ -25,7 +25,7 @@ public class CooccurAnalyse {
         this.wordNumber = wordNumber;
         this.isCase = isCase;
         this.corpusName = corpusName;
-        this.stopwordsStr = stopwordsStr;
+        this.stopwordsStr = (stopwordsStr != null) ? stopwordsStr : "";
         this.keywordsInput = (keywordsInput != null) ? keywordsInput : "";
         this.edgeAlg = edgeAlg;
     }

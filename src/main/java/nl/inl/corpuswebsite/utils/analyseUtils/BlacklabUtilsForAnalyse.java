@@ -3,12 +3,17 @@ package nl.inl.corpuswebsite.utils.analyseUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sun.tools.javac.Main;
+import com.sun.xml.bind.v2.TODO;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,6 +39,25 @@ public class BlacklabUtilsForAnalyse {
         String url = this.BASE_URL + corpusName + "?outputformat=json";
         JSONObject response = fetch(url);
         return Integer.parseInt(response.get("documentCount").toString());
+    }
+
+    /** query the docPids of a corpus,
+     * @param corpusName the name of corpus
+     * @return List < String > the list of docPid
+     */
+    public List<String> getDocPids(String corpusName) throws Exception {
+        String url = this.BASE_URL + corpusName + "/docs?number="+getDocumentCount(corpusName)+"&outputformat=json";
+        JSONObject response = fetch(url);
+        JSONArray docsArray = response.getJSONArray("docs");
+
+        List<String> docPids = new ArrayList<>();
+        for (int i = 0; i < docsArray.size(); i++) {
+            JSONObject docObject = docsArray.getJSONObject(i); // 获取每个文档对象
+            String docPid = docObject.getString("docPid"); // 提取 docPid
+            docPids.add(docPid); // 添加到 List 中
+        }
+
+        return docPids;
     }
 
 
@@ -65,11 +89,11 @@ public class BlacklabUtilsForAnalyse {
      * @return a one-dimensional array. the tokens in the form of a one-dimensional array, and each element is a token
      */
     public List<String> getAllContentLinear(String corpusName, List<String> stopwords, Boolean isCase) throws Exception {
-        int documentCount = getDocumentCount(corpusName);
         List<String> allPlainList = new ArrayList<>();
+        List<String> docPids = getDocPids(corpusName);
 
-        for (int i = 0; i < documentCount; i++) {
-            List<String> plainList = getContentFromDoc(corpusName, stopwords, isCase, i);
+        for (String docPid: docPids) {
+            List<String> plainList = getContentFromDoc(corpusName, stopwords, isCase, docPid);
             allPlainList.addAll(plainList);
         }
 
@@ -83,11 +107,11 @@ public class BlacklabUtilsForAnalyse {
      * @return a two-dimensional array. Each element in the two-dimensional array is a document, and each element in a document is a token
      */
     public List<List<String>> getAllContent(String corpusName, List<String> stopwords, Boolean isCase) throws Exception {
-        int documentCount = getDocumentCount(corpusName);
         List<List<String>> allPlainList = new ArrayList<>();
+        List<String> docPids = getDocPids(corpusName);
 
-        for (int i = 0; i < documentCount; i++) {
-            List<String> plainList = getContentFromDoc(corpusName, stopwords, isCase, i);
+        for (String docPid: docPids) {
+            List<String> plainList = getContentFromDoc(corpusName, stopwords, isCase, docPid);
             allPlainList.add(plainList);
         }
 
@@ -143,7 +167,6 @@ public class BlacklabUtilsForAnalyse {
         return wordFreqArray;
     }
 
-
     /** query the termFreq of a corpus, including absolute frequency and relative frequency of each token. The function uses the "hits" api.
      * @param corpusName the name of corpus
      * @param isCase If isCase == True, it means using "word" that means case and inflected forms are sensitive; else If isCase == False, it means using "lemma" that means case and inflected forms are not sensitive
@@ -160,15 +183,25 @@ public class BlacklabUtilsForAnalyse {
         String tokensStr = String.join("|", tokens);
         String wordOrLemma = isCase ? "word" : "lemma";
 
+        String url = this.BASE_URL + corpusName +"/hits";
+
         Map<String, String> requestParams = new HashMap<>();
         requestParams.put("patt", "[" + wordOrLemma + "=\""+tokensStr+ "\"]" );
         requestParams.put("outputformat", "json");
         requestParams.put("group", "hit:"+wordOrLemma);
-        String url = requestParams.keySet().stream()
-                .map(key -> key + "=" + URLEncoder.encode(requestParams.get(key)))
-                .collect(Collectors.joining("&", this.BASE_URL + corpusName +"/hits?", ""));
 
-        JSONObject response = fetch(url);
+        StringBuilder requestBodyBuilder = new StringBuilder();
+        for (Map.Entry<String, String> entry : requestParams.entrySet()) {
+            if (requestBodyBuilder.length() > 0) {
+                requestBodyBuilder.append("&");
+            }
+            requestBodyBuilder.append(entry.getKey())
+                    .append("=")
+                    .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+        }
+        String requestBody = requestBodyBuilder.toString();
+
+        JSONObject response = sendPostRequest(requestBody, url);
         JSONArray hitGroupsArray = response.getJSONArray("hitGroups");
         // Initialize the Map tokensTermfreq. Each token in tokens as the key, and 0 as the value.
         for (String token : tokens) {
@@ -198,20 +231,30 @@ public class BlacklabUtilsForAnalyse {
      * @return JSONArray , including keyword("word" or "lemma", depend on keywordPatt), collocation("word"or"lemma" , depend on isCase), relativeFreq and source(corpusName)
      */
     public JSONArray getColloc(String corpusName, Boolean isCase, List<String> stopwords, int number, int aroundNumber, String keywordPatt) throws Exception {
-        Map<String, String> requestParams = new HashMap<>();
         if(keywordPatt.length() == 0){
             keywordPatt = "[]";
         }
+        String url = this.BASE_URL + corpusName +"/hits";
+
+        Map<String, String> requestParams = new HashMap<>();
         requestParams.put("patt", keywordPatt);
         requestParams.put("number", String.valueOf(number));
         requestParams.put("outputformat", "json");
-        requestParams.put("context", aroundNumber+":"+aroundNumber);
-        String url = requestParams.keySet().stream()
-                .map(key -> key + "=" + URLEncoder.encode(requestParams.get(key)))
-                .collect(Collectors.joining("&", this.BASE_URL + corpusName +"/hits?", ""));
+        requestParams.put("context", aroundNumber + ":" + aroundNumber);
+
+        StringBuilder requestBodyBuilder = new StringBuilder();
+        for (Map.Entry<String, String> entry : requestParams.entrySet()) {
+            if (requestBodyBuilder.length() > 0) {
+                requestBodyBuilder.append("&");
+            }
+            requestBodyBuilder.append(entry.getKey())
+                    .append("=")
+                    .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+        }
+        String requestBody = requestBodyBuilder.toString();
 
         int tokenCount = getTokenCount(corpusName);
-        JSONObject response = fetch(url);
+        JSONObject response = sendPostRequest(requestBody, url);
         JSONArray hits = response.getJSONArray("hits");
 
         // The key is a unique identifier composed of a keyword and a collocation, and the value is the corresponding frequency.
@@ -276,6 +319,9 @@ public class BlacklabUtilsForAnalyse {
         return JSONArray.parseArray(filteredList.toString());
     }
 
+    /**
+     send GET request and return the response
+     */
     protected JSONObject fetch(String url) throws Exception {
         // Read from the specified URL.
         InputStream is = new URL(url).openStream();
@@ -292,14 +338,43 @@ public class BlacklabUtilsForAnalyse {
         }
     }
 
+    /**
+     send POST request and return the response
+     */
+    public static JSONObject sendPostRequest(String requestBody, String url) throws Exception {
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod("POST");
+        connection.setDoOutput(true);
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setRequestProperty("Content-Length", String.valueOf(requestBody.length()));
+
+        try (OutputStream os = connection.getOutputStream()) {
+            os.write(requestBody.getBytes(StandardCharsets.UTF_8));
+        }
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            StringBuilder responseBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    responseBuilder.append(line);
+                }
+            }
+            return JSON.parseObject(responseBuilder.toString());
+        } else {
+            throw new RuntimeException("HTTP request ERROR: " + responseCode);
+        }
+    }
+
     /** query the content from a document using the "Document snippet" API.
      * @param corpusName the name of corpus
      * @param stopwords the word that will be ignored in the result
      * @param isCase If isCase == True, it means using "word" that means case and inflected forms are sensitive; else If isCase == False, it means using "lemma" that means case and inflected forms are not sensitive
-     * @param docId the id of the document, 0-based
+     * @param docId the id of the document
      * @return List<String> the content of the document
      */
-    protected List<String> getContentFromDoc(String corpusName, List<String> stopwords, Boolean isCase, int docId) throws Exception {
+    protected List<String> getContentFromDoc(String corpusName, List<String> stopwords, Boolean isCase, String docId) throws Exception {
         String url = this.BASE_URL + corpusName + "/docs/" +docId+ "?outputformat=json";
         String tokenCount = fetch(url).getJSONObject("docInfo").getJSONArray("tokenCounts").getJSONObject(0).getString("tokenCount");
         url = this.BASE_URL + corpusName + "/docs/" +docId+ "/snippet?wordstart=0&wordend="+ tokenCount +"&outputformat=json";
@@ -328,7 +403,6 @@ public class BlacklabUtilsForAnalyse {
      * @return JSONArray , including keyword("word" or "lemma", depend on keywordPatt), cooccurWord("word"or"lemma" , depend on isCase), absoluteFreq,  relativeFreq and source(corpusName)
      */
     public JSONArray getCooccur(String corpusName, Boolean isCase, List<String> stopwords, int number, String keywordPatt, String edgeAlg) throws Exception {
-        Map<String, String> requestParams = new HashMap<>();
         if(keywordPatt.length() == 0){
             keywordPatt = "[]";
         }
@@ -340,16 +414,27 @@ public class BlacklabUtilsForAnalyse {
         }
         int aroundNumber = maxTokenCount;
 
+        String url = this.BASE_URL + corpusName +"/hits";
+
+        Map<String, String> requestParams = new HashMap<>();
         requestParams.put("patt", keywordPatt);
         requestParams.put("number", String.valueOf(number));
         requestParams.put("outputformat", "json");
         requestParams.put("context", aroundNumber+":"+aroundNumber);
-        String url = requestParams.keySet().stream()
-                .map(key -> key + "=" + URLEncoder.encode(requestParams.get(key)))
-                .collect(Collectors.joining("&", this.BASE_URL + corpusName +"/hits?", ""));
+
+        StringBuilder requestBodyBuilder = new StringBuilder();
+        for (Map.Entry<String, String> entry : requestParams.entrySet()) {
+            if (requestBodyBuilder.length() > 0) {
+                requestBodyBuilder.append("&");
+            }
+            requestBodyBuilder.append(entry.getKey())
+                    .append("=")
+                    .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+        }
+        String requestBody = requestBodyBuilder.toString();
 
         int tokenCount = getTokenCount(corpusName);
-        JSONObject response = fetch(url);
+        JSONObject response = sendPostRequest(requestBody, url);
         JSONArray hits = response.getJSONArray("hits");
 
         // The key is a unique identifier composed of a keyword and a collocation, and the value is the corresponding frequency.
@@ -494,16 +579,15 @@ public class BlacklabUtilsForAnalyse {
 
 
     /**
-     * TODO:修改注释等
-     * query the the edge of cooccur network, using "hits" api
+     * query the edge of cooccur network, using "hits" api
      *
      * @param corpusName the name of corpus
      * @param isCase     the collocation is word(isCase==True) or lemma(isCase==False)
      * @param stopwords  the word that will be ignored in the result
      * @param keywords   the CQL of keyword, eg. [word="(?-i)apple|banana"&lemma="(?-i)apple|banana"&pos="NN"]
      * @param edgeAlg    the algorithm of edge, Jaccard or Simpson
-     * @param scope
-     * @param weightThreshold 权重阈值 权重大于这个阈值则保留
+     * @param scope      the scope of cooccur
+     * @param weightThreshold weight threshold, if weight > weightThreshold, it will be saved
      * @return JSONArray , including keyword("word" or "lemma", depend on keywordPatt), collocation("word"or"lemma" , depend on isCase), relativeFreq and source(corpusName)
      */
     public JSONArray getCooccurNetworkEdge(String corpusName, Boolean isCase, List<String> stopwords, List<String> keywords, String edgeAlg, String scope, float weightThreshold
@@ -546,4 +630,5 @@ public class BlacklabUtilsForAnalyse {
 
         return edgeArray;
     }
+
 }

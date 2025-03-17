@@ -32,7 +32,7 @@ public class KeywordAnalyse {
         this.wordNumber = wordNumber;
         this.isCase = isCase;
         this.corpusName = corpusName;
-        this.stopwordsStr = stopwordsStr;
+        this.stopwordsStr = (stopwordsStr != null) ? stopwordsStr : "";
         this.keywordAlg = keywordAlg;
         this.dampingFactor = 0;
         this.maxIter = 0;

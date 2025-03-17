@@ -67,6 +67,7 @@ import { selectedSubCorpus$ } from '@/store/search/streams';
 
 import QueryFormSearch from '@/pages/search/form/QueryFormSearch.vue';
 import QueryFormExplore from '@/pages/search/form/QueryFormExplore.vue';
+import QueryFormAnalyse from '@/pages/search/form/QueryFormAnalyse.vue';
 import QueryFormFilters from '@/pages/search/form/QueryFormFilters.vue';
 import QueryFormSettings from '@/pages/search/form/QueryFormSettings.vue';
 
@@ -74,7 +75,6 @@ import History from '@/pages/search/History.vue';
 
 import * as BLTypes from '@/types/blacklabtypes';
 import {ApiError} from '@/types/apptypes';
-import QueryFormAnalyse from './QueryFormAnalyse.vue';
 
 export default Vue.extend({
 	components: {
