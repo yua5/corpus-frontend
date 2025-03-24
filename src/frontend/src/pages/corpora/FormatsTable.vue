@@ -1,12 +1,12 @@
 <template>
 	<div id="formats-all-container" class="cf-panel cf-panel-lg" style="display: block;">
 		<Spinner v-if="loading" class="lg overlay"/>
-		<h2>Your import formats</h2>
+		<h2>{{ $t('corpora.yourFormats') }}</h2>
 		<table class="table corpora">
 			<thead>
 				<tr>
-					<th>Id</th>
-					<th>Name</th>
+					<th>{{ $t('corpora.id') }}</th>
+					<th>{{ $t('corpora.name') }}</th>
 					<th class="table-icon"></th>
 					<th class="table-icon"></th>
 				</tr>
@@ -20,7 +20,7 @@
 				</tr>
 			</tbody>
 		</table>
-		<button type="button" class="btn btn-lg btn-default" @click="$emit('create')">New format</button>
+		<button type="button" class="btn btn-lg btn-default" @click="$emit('create')">{{ $t('corpora.newFormat') }}</button>
 	</div>
 </template>
 

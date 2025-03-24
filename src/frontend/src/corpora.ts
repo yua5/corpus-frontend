@@ -8,6 +8,7 @@ import DebugComponent from '@/components/Debug.vue';
 import * as loginSystem from '@/utils/loginsystem';
 import { init as initApi } from '@/api';
 
+import {i18n} from '@/utils/i18n';
 import '@/utils/i18n';
 
 import '@/global.scss';
@@ -32,6 +33,7 @@ $(document).ready(async () => {
 
 	// We can render before the tagset loads, the form just won't be populated from the url yet.
 	(window as any).vueRoot = new Vue({
+		i18n,
 		render: h => h(CorporaPageComponent),
 	}).$mount(document.querySelector('#vue-root')!);
 });

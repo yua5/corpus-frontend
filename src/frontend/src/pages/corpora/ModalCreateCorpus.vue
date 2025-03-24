@@ -7,10 +7,10 @@
 
 		<div class="container-fluid">
 			<div class="form-group">
-				<label style="width: 100%;">Corpus Name <input id="corpus_name" maxlength="80" class="form-control" v-model="corpusName" placeholder="Corpus name"></label>
+				<label style="width: 100%;">{{ $t('corpora.corpusName') }} <input id="corpus_name" maxlength="80" class="form-control" v-model="corpusName" placeholder="Corpus name"></label>
 			</div>
 			<div class="form-group">
-				<label for="corpus_document_type" title="The format of the documents that will be stored in the corpus">Document Format</label>
+				<label for="corpus_document_type" title="The format of the documents that will be stored in the corpus">{{ $t('corpora.documentFormat') }}</label>
 				<br>
 				<SelectPicker
 					id="corpus_document_type"
@@ -26,7 +26,7 @@
 					v-model="documentType"
 				/>
 				<small v-if="selectedFormat" class="text-muted" style="display: block; padding: 8px 8px 0px;">{{selectedFormat.description}}</small>
-				<small v-if="selectedFormat && selectedFormat.helpUrl" style="display: block; padding: 8px 8px 0px;"><a target="_blank" :href="selectedFormat.helpUrl">More information</a></small>
+				<small v-if="selectedFormat && selectedFormat.helpUrl" style="display: block; padding: 8px 8px 0px;"><a target="_blank" :href="selectedFormat.helpUrl">{{ $t('corpora.moreInfo') }}</a></small>
 			</div>
 		</div>
 

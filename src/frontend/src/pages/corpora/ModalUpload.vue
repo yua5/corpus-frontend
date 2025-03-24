@@ -6,16 +6,9 @@
 		@confirm="upload"
 		@close="$emit('close')"
 	>
-		<template #title>Upload new data to corpus <em>{{ corpus.displayName }}</em></template>
+		<template #title>{{ $t('corpora.uploadTitle') }} <em>{{ corpus.displayName }}</em></template>
 
-		<p>You may upload:</p>
-		<ul>
-			<li>Normal files to be indexed</li>
-			<li><em>.zip</em> or <em>.tar.gz</em> archives containing multiple files at once.
-				Archives should not contain files that cannot be indexed!
-			</li>
-			<li>External metadata files separately</li>
-		</ul>
+		{{ $t('corpora.uploadText') }}
 
 		<div style="padding: 10px 25px 0px;">
 			<form v-if="!uploading">
@@ -30,9 +23,9 @@
 				</label>
 
 				<small id="uploadFormatDescription" class="text-muted" style="display: block; margin: 12px 0px; width: 100%;">
-					The corpus accepts the following files:<br>
+					{{ $t('corpora.uploadFileDescript') }}<br>
 					<template v-if="format">{{ format.description }}</template>
-					<template v-else>Unknown format (it may have been deleted from the server), uploads might fail</template>
+					<template v-else>{{ $t('corpora.unknownFormatDescript') }}</template>
 				</small>
 			</form>
 

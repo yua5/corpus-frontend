@@ -13,7 +13,7 @@
 		<div style="display: flex; flex-direction: column; height: 100%;">
 			<div style="display:flex; align-items: flex-start; justify-content: space-between; margin-bottom: 15px;">
 				<div class="form-group" style="margin-right: 50px; margin-bottom: 0; flex: 1 1 auto;">
-					<label for="format_name">Format name</label>
+					<label for="format_name">{{ $t('corpora.formatName') }}</label>
 					<div class="input-group" style="width:100%">
 						<input type="text" id="format_name" name="format_name" class="form-control" v-model.lazy="formatName">
 						<SelectPicker v-model="formatLanguage" :options="formatTypes" hideEmpty data-class="btn-primary dropdown-toggle" class="input-group-btn"/>
@@ -21,18 +21,18 @@
 				</div>
 
 				<div>
-					<label style="display:block;">Load a file</label>
+					<label style="display:block;">{{ $t('corpora.loadFile') }}</label>
 					<div style="display: inline-flex; flex-wrap: nowrap;">
 						<label class="btn btn-primary" style="position:relative;" for="format_file">
 							<input type="file" name="format_file" id="format_file" title="Open a file from your computer" style="position:absolute;left:0;top:0;width:0px;height:100%;padding-left:100%;opacity:0;cursor:pointer;overflow:hidden;" @change="loadFormatFromDisk">
-							Open file...
+							{{ $t('corpora.openFile') }}
 						</label>
 
-						<label style="padding: 0 0.5em; align-self: flex-end;">Or</label>
+						<label style="padding: 0 0.5em; align-self: flex-end;">{{ $t('corpora.or') }}</label>
 
 						<div style="display: inline-flex; flex-wrap: nowrap; flex-direction: row;">
 							<SelectPicker :options="formatOptions" data-style="border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0;" right :showValues="true" searchable placeholder="Select an existing format" hideEmpty allowHtml data-menu-width="auto" container="body" v-model="formatPresetName"/>
-							<button @click="downloadFormat" :disabled="!formatPresetName || downloading" class="btn btn-primary" style="border-top-left-radius: 0; border-bottom-left-radius: 0">Load</button>
+							<button @click="downloadFormat" :disabled="!formatPresetName || downloading" class="btn btn-primary" style="border-top-left-radius: 0; border-bottom-left-radius: 0">{{ $t('corpora.load') }}</button>
 						</div>
 					</div>
 
@@ -54,7 +54,7 @@
 
 		</div>
 		<template #footer>
-			<h5 class="pull-left"><span class="fa fa-question-circle text-muted"></span> <a href="http://inl.github.io/BlackLab/how-to-configure-indexing.html" target="_blank" style="font-weight: bold">How to write your own format</a></h5>
+			<h5 class="pull-left"><span class="fa fa-question-circle text-muted"></span> <a href="http://inl.github.io/BlackLab/how-to-configure-indexing.html" target="_blank" style="font-weight: bold">{{ $t('corpora.writeFormatTip') }}</a></h5>
 		</template>
 	</Modal>
 </template>

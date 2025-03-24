@@ -7,8 +7,8 @@
 			<thead>
 				<tr>
 					<th class="table-icon"></th>
-					<th>Corpus</th>
-					<th>Size</th>
+					<th>{{ $t('corpora.corpus') }}</th>
+					<th>{{ $t('corpora.size') }}</th>
 					<th class="table-icon"></th>
 					<th v-if="isPrivate" class="table-icon"></th>
 					<th v-if="isPrivate" class="table-icon"></th>
@@ -31,24 +31,24 @@
 					<td :colspan="isPrivate ? 7 : 4">
 						<table>
 							<tr :title="corpus.timeModifiedFull">
-								<th>Last modified</th>
+								<th>{{ $t('corpora.lastModified') }}</th>
 								<td>{{corpus.timeModified}}</td>
 							</tr>
 							<!-- If the corpus has a format and the format is in the list, corpus.format != null, and the format is ours. (blacklab only returns our own formats.) -->
 							<tr v-if="isPrivate">
-								<th>Format</th>
+								<th>{{ $t('corpora.format') }}</th>
 								<td :title="(corpus.format && corpus.format.owner) ? 'Format owned by ' + corpus.format.owner : ''">{{(corpus.format && corpus.format.owner) ? '*' : ''}}{{corpus.format ? corpus.format.shortId : corpus.documentFormat}}</td>
 							</tr>
 							<tr>
-								<th>Description</th>
+								<th>{{ $t('corpora.description') }}</th>
 								<td>{{corpus.description || 'No description'}}</td>
 							</tr>
 							<tr>
-								<th>Documents</th>
+								<th>{{ $t('corpora.documents') }}</th>
 								<td>{{corpus.documentCount.toLocaleString()}}</td>
 							</tr>
 							<tr>
-								<th>Tokens</th>
+								<th>{{ $t('corpora.tokens') }}</th>
 								<td>{{corpus.tokenCount.toLocaleString()}}</td>
 							</tr>
 						</table>
@@ -57,8 +57,8 @@
 			</template></tbody>
 		</table>
 		<div v-if="isPrivate">
-			<button v-if="canCreateCorpus" class="btn btn-default btn-lg" id="create-corpus" type="button" @click="$emit('create')">New corpus</button>
-			<div v-else class="text-danger" style="padding-left: 8px;"><em>You have reached the private corpora limit.<br>You will have to delete one of your corpora before you may create another.</em></div>
+			<button v-if="canCreateCorpus" class="btn btn-default btn-lg" id="create-corpus" type="button" @click="$emit('create')">{{ $t('corpora.newCorpus') }}</button>
+			<div v-else class="text-danger" style="padding-left: 8px;"><em>{{ $t('corpora.privateTip') }}</em></div>
 		</div>
 	</div>
 

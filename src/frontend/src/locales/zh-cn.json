@@ -479,6 +479,41 @@
 		"create": "创建",
 		"illegalCorpusName": "非法语料库名称。语料库名称必须在3到30个字符之间，不能包含特殊字符。",
 		"retry": "重试"
+	},	
+	"corpora": {		
+		"publicCorpora": "公共语料库",
+		"yourCorpora": "用户语料库",
+		"newCorpus": "创建新语料库",
+		"yourFormats": "导入格式",
+		"newFormat": "创建新格式",
+		"privateTip": "您已达到私有语料库限制。你必须先删除一个语料库，然后才能创建另一个语料库。",
+		"corpus": "语料库",
+		"size": "大小",
+		"lastModified": "上次修改",
+		"format": "格式",
+		"description": "详情",
+		"documents": "文件数",
+		"tokens": "Token数",
+		"errorLoadingTip": "加载BlackLab信息失败，请刷新页面！",
+		"noCorpora": "没有可用的语料库",
+		"noCorporaTip": "BlackLab没有添加任何语料库。当语料库可用时，语料库将出现在这里。",
+		"id": "Id",
+		"name": "名称",
+		"corpusName": "语料库名称",
+		"documentFormat": "文件格式",
+		"moreInfo": "更多信息",
+		"formatName": "格式名称",
+		"loadFile": "导入文件",
+		"openFile": "打开文件...",
+		"or": "或者",
+		"load": "导入",
+		"writeFormatTip": "如何编写自己的格式",
+		"shareTitle": "语料库共享选项",
+		"shareText": "每行一个用户名",
+		"uploadTitle": "上传新数据到语料库",
+		"uploadText": "<p>您可以上传：</p><ul><li>要索引的普通文件</li><li><em>.zip</em>或<em>.tar.gz</em>一次包含多个文件的归档文件。存档不应该包含无法索引的文件！</li><li>单独的外部元数据文件</li></ul>",
+		"uploadFileDescript": "语料库接受以下文件:",
+		"unknownFormatDescript": "格式未知（可能已从服务器上删除），上传可能失败"
 	},
 	"pageGuide":{
 		"simple": "<p>简单搜索允许您快速搜索单词。它支持通配符。<br>通配符是一种特殊字符，可以匹配任何其他字符。支持两种通配符：<br>星号通配符将匹配任何长度的任何字符串。<br>问号通配符将匹配任何单个字母或字符。<br>例如：搜索 <code>ab</code> 将匹配以 <code>a</code> 开头且以 <code>b</code> 结尾的所有值，而搜索 <code>a?b</code> 将仅匹配以 <code>a</code> 开头且以 <code>b</code> 结尾的三字单词。<br></p>",
@@ -501,5 +536,5 @@
 		"clickGroup": "单击 <code>group</code> 可显示或隐藏该组内的 <code>hits</code>。",
 		"clickGoBack": "单击此处返回正常的 <code>hits</code> 视图，以查看此组中 hits 的更详细信息。<br>将出现一个小指示器，让您知道您正在查看来自特定组的 hits。",
 		"documentInfo": "关于 <code>document</code> 的信息。<br>单击文档的标题或 <code>view document info</code> 按钮即可在新窗口中打开此文档。<br>仅当语料库未禁用文档查看时才可用此功能。<br>"
-		}
+	}
 }

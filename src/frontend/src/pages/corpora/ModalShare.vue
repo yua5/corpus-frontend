@@ -1,7 +1,7 @@
 <template>
 	<Modal confirmMessage="Save" @confirm="save" @close="$emit('close')" :confirmEnabled="!loading">
-		<template #title>Sharing options for corpus <em>{{ corpus.displayName }}</em></template>
-		<template #header><small class="text-muted">One username per line</small></template>
+		<template #title>{{ $t('corpora.shareTitle') }} <em>{{ corpus.displayName }}</em></template>
+		<template #header><small class="text-muted">{{ $t('corpora.shareText') }}</small></template>
 
 		<textarea v-model="content" style="width:100%; height: 400px; resize: vertical;" class="form-control"></textarea>
 

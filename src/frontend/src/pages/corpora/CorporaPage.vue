@@ -4,7 +4,7 @@
 	<Spinner v-if="loadingServerInfo" lg center/>
 
 	<div v-if="!busy && !serverInfo && errorMessage" class="alert alert-danger">
-		Error loading BlackLab info, try refreshing the page.
+		{{ $t('corpora.errorLoadingTip') }}
 		<p>{{ errorMessage }}</p>
 	</div>
 	<div v-else-if="successMessage" class="alert alert-success">
@@ -18,19 +18,19 @@
 
 	<template v-if="serverInfo">
 		<div v-if="!publicCorpora.length && !loadingCorpora && !canCreateCorpus" class="cf-panel cf-panel-lg" >
-			<h2>No corpora available</h2>
-			<p>No corpora have been added to BlackLab. Corpora will appear here when when they become available.</p>
+			<h2>{{ $t('corpora.noCorpora') }}</h2>
+			<p>{{ $t('corpora.noCorporaTip') }}</p>
 		</div>
 		<CorpusTable v-if="publicCorpora.length"
 			:loading="loadingCorpora"
 			:corpora="publicCorpora"
 			:formats="formats"
-			title="Public corpora"
+			:title="$t('corpora.publicCorpora')"
 		/>
 
 		<!-- always shown if logged in -->
 		<CorpusTable v-if="loggedIn"
-			title="Your corpora"
+			:title="$t('corpora.yourCorpora')"
 			isPrivate
 
 			:loading="loadingCorpora"
