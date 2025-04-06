@@ -316,11 +316,9 @@
         </dependency>
 
         <dependency>
-            <groupId>mallet</groupId>
+            <groupId>cc.mallet</groupId>
             <artifactId>mallet</artifactId>
             <version>2.0.8</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/mallet.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
