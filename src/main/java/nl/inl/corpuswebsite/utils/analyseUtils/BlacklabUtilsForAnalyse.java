@@ -3,8 +3,6 @@ package nl.inl.corpuswebsite.utils.analyseUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.sun.tools.javac.Main;
-import com.sun.xml.bind.v2.TODO;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -440,20 +438,20 @@ public class BlacklabUtilsForAnalyse {
         // The key is a unique identifier composed of a keyword and a collocation, and the value is the corresponding frequency.
         Map<String, Integer> freqMap = new HashMap<>();
         // The key is a unique identifier composed of a keyword and a collocation, and the value is the docId of their occur.
-        Map<String, Set<Integer>> composeDocMap = new HashMap<>();
+        Map<String, Set<String>> composeDocMap = new HashMap<>();
         // The key is keyword, and the value is the docId of its occur.
-        Map<String, Set<Integer>> keywordDocMap = new HashMap<>();
+        Map<String, Set<String>> keywordDocMap = new HashMap<>();
         // Iterate through each element in the hits array.
         for (int i = 0; i < hits.size(); i++) {
             JSONObject hit = hits.getJSONObject(i);
             JSONObject match = hit.getJSONObject("match");
             JSONObject left = hit.getJSONObject("left");
             JSONObject right = hit.getJSONObject("right");
-            int docId = hit.getIntValue("docPid");
+            String docId = hit.getString("docPid");
 
             String keyword = isCase? match.getJSONArray("word").get(0).toString() : match.getJSONArray("lemma").get(0).toString();
             // Check if there is already an entry for the keyword in the map
-            Set<Integer> docIds = keywordDocMap.get(keyword);
+            Set<String> docIds = keywordDocMap.get(keyword);
             if (docIds == null) {
                 docIds = new HashSet<>();
                 docIds.add(docId);
@@ -470,7 +468,7 @@ public class BlacklabUtilsForAnalyse {
                 String cooccurWord = leftArr.getString(j);
                 String key = keyword + "|" + cooccurWord;
                 freqMap.put(key, freqMap.getOrDefault(key, 0) + 1);
-                Set<Integer> ids = composeDocMap.get(key);
+                Set<String> ids = composeDocMap.get(key);
                 if (ids == null) {
                     ids = new HashSet<>();
                     ids.add(docId);
@@ -483,7 +481,7 @@ public class BlacklabUtilsForAnalyse {
                 String cooccurWord = rightArr.getString(k);
                 String key = keyword + "|" + cooccurWord;
                 freqMap.put(key, freqMap.getOrDefault(key, 0) + 1);
-                Set<Integer> ids = composeDocMap.get(key);
+                Set<String> ids = composeDocMap.get(key);
                 if (ids == null) {
                     ids = new HashSet<>();
                     ids.add(docId);
@@ -530,20 +528,19 @@ public class BlacklabUtilsForAnalyse {
         }
 
         // compute the edgeAlg
-        List<List<String>> corpusList = getAllContent(corpusName, stopwords, isCase);
-        Map<String, Set<Integer>> cooccurDocMap = new HashMap<>();
+        Map<String, Set<String>> cooccurDocMap = new HashMap<>();
         for (String cooccurWord : cooccurWords) {
             cooccurDocMap.put(cooccurWord, new HashSet<>());
         }
 
-        int docIndex = 0; // Suppose that the document serial number increments from 0
-        for (List<String> document : corpusList) {
-            for (String word : document) {
+        List<String> docPids = getDocPids(corpusName);
+        for (String docPid: docPids) {
+            List<String> plainList = getContentFromDoc(corpusName, stopwords, isCase, docPid);
+            for (String word : plainList) {
                 if (cooccurWords.contains(word)) {
-                    cooccurDocMap.get(word).add(docIndex);
+                    cooccurDocMap.get(word).add(docPid);
                 }
             }
-            docIndex++;
         }
 
         for (JSONObject jsonObject : filteredList) {
@@ -551,11 +548,11 @@ public class BlacklabUtilsForAnalyse {
             String cooccurWord = jsonObject.getString("cooccurWord");
             String compose = keyword + "|" + cooccurWord;
 
-            Set<Integer> keywordSet = keywordDocMap.get(keyword);
+            Set<String> keywordSet = keywordDocMap.get(keyword);
             int keywordDocCount = (keywordSet != null) ? keywordSet.size() : 0;
-            Set<Integer> cooccurSet = cooccurDocMap.get(cooccurWord);
+            Set<String> cooccurSet = cooccurDocMap.get(cooccurWord);
             int cooccurDocCount = (cooccurSet != null) ? cooccurSet.size() : 0;
-            Set<Integer> composeSet = composeDocMap.get(compose);
+            Set<String> composeSet = composeDocMap.get(compose);
             int composeDocCount = (composeSet != null) ? composeSet.size() : 0;
 
             int countA = Math.max(composeDocCount, 0);  // the count of document of containing keyword and coocurword at the same time
