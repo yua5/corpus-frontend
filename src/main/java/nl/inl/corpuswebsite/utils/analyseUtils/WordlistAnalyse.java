@@ -138,7 +138,6 @@ public class WordlistAnalyse {
                 }
                 break;
             default:
-                System.out.println(dispersionAlg);
                 break;
         }
 
@@ -216,7 +215,6 @@ public class WordlistAnalyse {
                 }
                 break;
             default:
-                System.out.println(adjustedAlg);
                 break;
         }
 

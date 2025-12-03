@@ -9,7 +9,7 @@ services:
       args:
         BLACKLAB_IMAGE_VERSION: ${BLACKLAB_IMAGE_VERSION:-latest}
     ports:
-      - "8080:8080" # frontend and BLS will both be available on 8080
+      - "8080:8080" # frontend and BLS will both be available on 8080  
     volumes:
       # Default values have no effect, but user can override CORPUS_DIR/_NAME to bind mount corpus
       - ${CORPUS_DIR:-./README.md}:/data/index/${CORPUS_NAME:-README.md}
@@ -23,4 +23,4 @@ services:
       args:
         BLACKLAB_IMAGE_VERSION: ${BLACKLAB_IMAGE_VERSION:-latest}	
     ports:
-      - "8080:8080" # frontend and BLS will both be available on 8080
+      - "8080:8080" # frontend and BLS will both be available on 8080 

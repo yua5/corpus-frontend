@@ -420,7 +420,7 @@
                                       ],
                                       "additionalProperties": false,
                                       "title": "Parse part of speech",
-                                      "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                                      "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                                     },
                                     {
                                       "type": "object",
@@ -750,7 +750,7 @@
                                       ],
                                       "additionalProperties": false,
                                       "title": "Parse part of speech",
-                                      "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                                      "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                                     },
                                     {
                                       "type": "object",
@@ -1083,7 +1083,7 @@
                             ],
                             "additionalProperties": false,
                             "title": "Parse part of speech",
-                            "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                            "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                           },
                           {
                             "type": "object",
@@ -1456,7 +1456,7 @@
                                                 ],
                                                 "additionalProperties": false,
                                                 "title": "Parse part of speech",
-                                                "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                                                "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                                               },
                                               {
                                                 "type": "object",
@@ -1786,7 +1786,7 @@
                                                 ],
                                                 "additionalProperties": false,
                                                 "title": "Parse part of speech",
-                                                "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                                                "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                                               },
                                               {
                                                 "type": "object",
@@ -2119,7 +2119,7 @@
                                       ],
                                       "additionalProperties": false,
                                       "title": "Parse part of speech",
-                                      "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                                      "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                                     },
                                     {
                                       "type": "object",
@@ -2508,7 +2508,7 @@
                                                 ],
                                                 "additionalProperties": false,
                                                 "title": "Parse part of speech",
-                                                "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                                                "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                                               },
                                               {
                                                 "type": "object",
@@ -2838,7 +2838,7 @@
                                                 ],
                                                 "additionalProperties": false,
                                                 "title": "Parse part of speech",
-                                                "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                                                "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                                               },
                                               {
                                                 "type": "object",
@@ -3171,7 +3171,7 @@
                                       ],
                                       "additionalProperties": false,
                                       "title": "Parse part of speech",
-                                      "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                                      "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                                     },
                                     {
                                       "type": "object",
@@ -3585,7 +3585,7 @@
                               ],
                               "additionalProperties": false,
                               "title": "Parse part of speech",
-                              "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                              "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                             },
                             {
                               "type": "object",
@@ -3948,7 +3948,7 @@
                             ],
                             "additionalProperties": false,
                             "title": "Parse part of speech",
-                            "description": "parse common part of speech expressions of the form A(b=c,d=e)\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\nsuch as number=plural, etc.\nIf you don't specify field (or specify an underscore _ for field),\nthe main part of speech is extracted.\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
+                            "description": "parse common part of speech expressions of the form A(b=c,d=e)\r\nwhere A is the main part of speech (e.g. 'N' for noun), and b=c is a part of speech feature\r\nsuch as number=plural, etc.\r\nIf you don't specify field (or specify an underscore _ for field),\r\nthe main part of speech is extracted.\r\nIf you specify a feature name (e.g. \"number\"), that feature is extracted."
                           },
                           {
                             "type": "object",

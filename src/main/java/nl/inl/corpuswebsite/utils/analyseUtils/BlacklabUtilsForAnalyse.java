@@ -29,6 +29,16 @@ public class BlacklabUtilsForAnalyse {
         this.BASE_URL = BASE_URL.endsWith("/") ? BASE_URL : BASE_URL + "/";
     }
 
+    // 过滤不可读字符，只留汉字、字母、数字、空格
+    private static String keepPrintable(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        return raw.replaceAll("[^\\p{L}\\p{N}\\s]", " ")  // 清掉不可读
+                .replaceAll("\\s{2,}", " ")            // 多空格压成一个
+                .trim();
+    }
+
     /** query the "documentCount" param of a corpus, which means how many documents the corpus have.
      * @param corpusName the name of corpus
      * @return int documentCount
@@ -74,7 +84,7 @@ public class BlacklabUtilsForAnalyse {
      * @param docId the id of document, 0-based.
      * @return int tokenCount
      */
-    public int getDocTokenCount(String corpusName, int docId) throws Exception {
+    public int getDocTokenCount(String corpusName, String docId) throws Exception {
         String url = BASE_URL + corpusName +"/docs/" + docId +"?outputformat=json";
         JSONObject response = fetch(url);
         return response.getJSONObject("docInfo").getJSONArray("tokenCounts").getJSONObject(0).getIntValue("tokenCount");
@@ -139,6 +149,12 @@ public class BlacklabUtilsForAnalyse {
         for (int i = 0; i < hitGroupsArray.size(); i++) {
             JSONObject hitGroup = hitGroupsArray.getJSONObject(i);
             String identityDisplay = hitGroup.getString("identityDisplay");
+
+            // 过滤不可读字符
+            identityDisplay = keepPrintable(identityDisplay);
+            if (identityDisplay.isEmpty()) {          // 洗成空串直接跳过
+                continue;
+            }
 
             // identityDisplay(the word)is in stopwords List, continue the loop
             if (stopwords.contains(identityDisplay)) {
@@ -250,11 +266,9 @@ public class BlacklabUtilsForAnalyse {
                     .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
         }
         String requestBody = requestBodyBuilder.toString();
-
         int tokenCount = getTokenCount(corpusName);
         JSONObject response = sendPostRequest(requestBody, url);
         JSONArray hits = response.getJSONArray("hits");
-
         // The key is a unique identifier composed of a keyword and a collocation, and the value is the corresponding frequency.
         Map<String, Integer> freqMap = new HashMap<>();
         // Iterate through each element in the hits array.
@@ -264,20 +278,47 @@ public class BlacklabUtilsForAnalyse {
             JSONObject left = hit.getJSONObject("left");
             JSONObject right = hit.getJSONObject("right");
 
-            String keyword = isCase? match.getJSONArray("word").get(0).toString() : match.getJSONArray("lemma").get(0).toString();
+            // 1. 关键词安全检查 (解决 ArrayIndexOutOfBoundsException)
+            JSONArray keywordArr = isCase ? match.getJSONArray("word") : match.getJSONArray("lemma");
+            if (keywordArr == null || keywordArr.size() == 0) {
+                continue;
+            }
+            String keyword = keywordArr.get(0).toString();
+            // *** 在这里清洗关键词 ***
+            keyword = keepPrintable(keyword);
+            if (keywordArr == null || keywordArr.size() == 0) {
+                continue;
+            }
+
             JSONArray leftArr = isCase? left.getJSONArray("word") : left.getJSONArray("lemma");
             JSONArray rightArr = isCase? right.getJSONArray("word") : right.getJSONArray("lemma");
 
             // Combine words on the left and right to form collocations and count their frequencies.
-            for (int j = 0; j < leftArr.size(); j++) {
-                String collocation = leftArr.getString(j);
-                String key = keyword + "|" + collocation;
-                freqMap.put(key, freqMap.getOrDefault(key, 0) + 1);
+            if (leftArr != null) {
+                for (int j = 0; j < leftArr.size(); j++) {
+                    String collocation = leftArr.getString(j);
+
+                    // *** 在这里清洗搭配词 ***
+                    collocation = keepPrintable(collocation);
+
+                    if (!collocation.isEmpty()) {
+                        String key = keyword + "|" + collocation;
+                        freqMap.put(key, freqMap.getOrDefault(key, 0) + 1);
+                    }
+                }
             }
-            for (int k = 0; k < rightArr.size(); k++) {
-                String collocation = rightArr.getString(k);
-                String key = keyword + "|" + collocation;
-                freqMap.put(key, freqMap.getOrDefault(key, 0) + 1);
+            if (rightArr != null) {
+                for (int k = 0; k < rightArr.size(); k++) {
+                    String collocation = rightArr.getString(k);
+
+                    // *** 在这里清洗搭配词 ***
+                    collocation = keepPrintable(collocation);
+
+                    if (!collocation.isEmpty()) {
+                        String key = keyword + "|" + collocation;
+                        freqMap.put(key, freqMap.getOrDefault(key, 0) + 1);
+                    }
+                }
             }
         }
 
@@ -343,11 +384,13 @@ public class BlacklabUtilsForAnalyse {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setRequestProperty("Content-Length", String.valueOf(requestBody.length()));
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+        // 修正：计算的是 UTF-8 编码后的字节数
+        byte[] requestBodyBytes = requestBody.getBytes(StandardCharsets.UTF_8);
+        connection.setRequestProperty("Content-Length", String.valueOf(requestBodyBytes.length));
 
         try (OutputStream os = connection.getOutputStream()) {
-            os.write(requestBody.getBytes(StandardCharsets.UTF_8));
+            os.write(requestBodyBytes);
         }
 
         int responseCode = connection.getResponseCode();
@@ -383,6 +426,8 @@ public class BlacklabUtilsForAnalyse {
 
         List<String> selectedWords = selectedWordsArray.stream()
                 .map(Object::toString)
+                .map(word -> keepPrintable(word))
+                .filter(word -> !word.isEmpty() && !word.equals(" "))
                 .filter(word -> !stopwords.contains(word))
                 .collect(Collectors.toList());
 
@@ -406,9 +451,10 @@ public class BlacklabUtilsForAnalyse {
         }
 
         int docNum = getDocumentCount(corpusName);
-        int maxTokenCount = 0; // the max tokenCount in each doc
-        for(int i = 0; i < docNum ; i++){
-            maxTokenCount = Math.max(getDocTokenCount(corpusName, i), maxTokenCount);
+        List<String> theDocPids = getDocPids(corpusName);
+        int maxTokenCount = 0;
+        for(String docPid: theDocPids){
+            maxTokenCount = Math.max(getDocTokenCount(corpusName, docPid), maxTokenCount);
         }
         int aroundNumber = maxTokenCount;
 

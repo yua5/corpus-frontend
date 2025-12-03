@@ -1,0 +1,77 @@
+---
+displayName: "index_files"
+description: ""
+contentViewable: true
+textDirection: "ltr"
+documentFormat: "tei-p5-legacy"
+tokenCount: 1008320
+versionInfo:
+  blackLabBuildTime: "2022-10-06 13:11:40"
+  blackLabVersion: "3.0.1"
+  indexFormat: "3.1"
+  timeCreated: "2024-03-21 03:51:46"
+  timeModified: "2024-03-21 03:51:46"
+  alwaysAddClosingToken: true
+  tagLengthInPayload: true
+fieldInfo:
+  namingScheme: "DEFAULT"
+  defaultAnalyzer: "default"
+  unknownCondition: "never"
+  unknownValue: "unknown"
+  titleField: "fromInputFile"
+  metadataFieldGroups: []
+  annotationGroups: {}
+  metadataFields:
+    fromInputFile:
+      displayName: "From input file"
+      uiType: ""
+      description: ""
+      type: "untokenized"
+      analyzer: "DEFAULT"
+      unknownValue: "unknown"
+      unknownCondition: "NEVER"
+      valueListComplete: true
+      values:
+        D:\MyProject\blacklab-core-3.0.1\input_files\brownCorpus.lemmatized.xml: 500
+      displayValues: {}
+      displayOrder: []
+  complexFields:
+    contents:
+      displayName: "Contents"
+      description: "Contents of the documents."
+      mainProperty: "word"
+      displayOrder:
+      - "word"
+      - "lemma"
+      - "pos"
+      annotations:
+      - name: "word"
+        displayName: "Word"
+        description: ""
+        uiType: ""
+        isInternal: false
+      - name: "lemma"
+        displayName: "Lemma"
+        description: ""
+        uiType: ""
+        isInternal: false
+      - name: "pos"
+        displayName: "PoS"
+        description: ""
+        uiType: ""
+        isInternal: false
+      - name: "starttag"
+        displayName: "Starttag"
+        description: ""
+        uiType: ""
+        isInternal: true
+      - name: "punct"
+        displayName: "Punct"
+        description: ""
+        uiType: ""
+        isInternal: true
+corpusConfig:
+    # Is the user allowed to view whole documents in the search interface?
+    # (used by BLS to either allow or disallow fetching full document content)
+    # (defaults to false because this is not allowed for some datasets)
+    contentViewable: true

@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * ClassName: TopicAnalyse
@@ -42,8 +43,10 @@ public class TopicAnalyse {
 
         // Step 1: Create a text processing pipeline
         ArrayList<Pipe> pipeList = new ArrayList<>();
-        // Converts text to Token sequence
-        pipeList.add(new CharSequence2TokenSequence());
+        // 替换 CharSequence2TokenSequence：使用一个能匹配中文的 Pattern
+        // \S+ 匹配任何非空白字符序列，这对于空格分隔的中文词汇是最安全的
+        Pattern nonWhitespacePattern = Pattern.compile("\\S+");
+        pipeList.add(new CharSequence2TokenSequence(nonWhitespacePattern));
         // Remove stop words (including custom stop words)
         TokenSequenceRemoveStopwords removeStopwords = new TokenSequenceRemoveStopwords(false, false);
         removeStopwords.addStopWords(stopWords.toArray(new String[0]));

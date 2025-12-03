@@ -122,7 +122,6 @@ public class CollocationAnalyse {
                 TestAlg.ZScore(colloArray, keywords);
                 break;
             default:
-                System.out.println(testAlg);
                 break;
         }
 
@@ -131,7 +130,6 @@ public class CollocationAnalyse {
                 BayesAlg.bayesLogLikelihoodRatioTest(colloArray, keywords);
                 break;
             default:
-                System.out.println(bayesAlg);
                 break;
         }
 
@@ -188,7 +186,6 @@ public class CollocationAnalyse {
                 EffectSizeAlg.squaredPhiCoeff(colloArray, keywords);
                 break;
             default:
-                System.out.println(effectSizeAlg);
                 break;
         }
 
